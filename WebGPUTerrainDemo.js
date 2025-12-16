@@ -354,32 +354,30 @@ export default function WebGPUTerrainDemo() {
             fpsTime = 0;
           }
 
-          // Grass animation is now handled by GPU Node Material!
-          // We only need to animate camera and particles on CPU
-
           // Animate particles
           if (particles) {
             const positions = particles.geometry.attributes.position.array;
-          const velocities = particles.userData.velocities;
-          
-          for (let i = 0; i < velocities.length; i++) {
-            positions[i * 3] += velocities[i].x;
-            positions[i * 3 + 1] += velocities[i].y;
-            positions[i * 3 + 2] += velocities[i].z;
+            const velocities = particles.userData.velocities;
+            
+            for (let i = 0; i < velocities.length; i++) {
+              positions[i * 3] += velocities[i].x;
+              positions[i * 3 + 1] += velocities[i].y;
+              positions[i * 3 + 2] += velocities[i].z;
 
-            // Boundary check - bounce or wrap
-            if (Math.abs(positions[i * 3]) > 50) velocities[i].x *= -1;
-            if (positions[i * 3 + 1] > 35 || positions[i * 3 + 1] < 5) velocities[i].y *= -1;
-            if (Math.abs(positions[i * 3 + 2]) > 50) velocities[i].z *= -1;
+              if (Math.abs(positions[i * 3]) > 50) velocities[i].x *= -1;
+              if (positions[i * 3 + 1] > 35 || positions[i * 3 + 1] < 5) velocities[i].y *= -1;
+              if (Math.abs(positions[i * 3 + 2]) > 50) velocities[i].z *= -1;
+            }
+            particles.geometry.attributes.position.needsUpdate = true;
           }
-          particles.geometry.attributes.position.needsUpdate = true;
 
           // Slow sun movement
-          sun.position.x = Math.cos(time * 0.05) * 80;
-          sun.position.z = Math.sin(time * 0.05) * 80;
+          if (sun) {
+            sun.position.x = Math.cos(time * 0.05) * 80;
+            sun.position.z = Math.sin(time * 0.05) * 80;
+          }
 
           // Cinematic Camera Movement
-          // Orbit gently
           const camTime = time * 0.1;
           const radius = 35;
           camera.position.x = Math.sin(camTime) * radius;
@@ -387,7 +385,9 @@ export default function WebGPUTerrainDemo() {
           camera.position.y = 12 + Math.sin(camTime * 0.5) * 4;
           camera.lookAt(0, 5, 0);
 
-          renderer.render(scene, camera);
+          if (renderer && scene && camera) {
+            renderer.render(scene, camera);
+          }
         }
 
         animate();
